@@ -8,7 +8,10 @@ ANDROID_JAR="${ANDROID_JAR:-/home/user/vendor-src/android-platforms/android-23/a
 JAVA="${JAVA:-/tmp/package/jre/bin/java}"
 SMALI="${SMALI:-/tmp/yongjhih-rc/bin/smali-2.1.0.jar}"
 WORKDIR="${TMPDIR:-/tmp}/jahan-football-apk"
-ICON="$ROOT/mobile/assets/branding/app_icon_1024.png"
+ICON="$ROOT/android-shell/res-src/ic_launcher.png"
+if [[ ! -f "$ICON" ]]; then
+  ICON="$ROOT/mobile/assets/branding/app_icon_1024.png"
+fi
 
 for req in "$AAPT" "$ANDROID_JAR" "$JAVA" "$SMALI" "$ICON"; do
   if [[ ! -e "$req" ]]; then
@@ -23,7 +26,7 @@ mkdir -p "$WORKDIR/res/values" "$WORKDIR/res/mipmap-hdpi" \
   "$WORKDIR/assets" "$WORKDIR/compiled"
 
 cp "$ROOT/android-shell/AndroidManifest.xml" "$WORKDIR/AndroidManifest.xml"
-cp "$ROOT/android-shell/www/index.html" "$WORKDIR/assets/index.html"
+cp -a "$ROOT/android-shell/www/." "$WORKDIR/assets/"
 cat > "$WORKDIR/res/values/strings.xml" <<'EOF'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
