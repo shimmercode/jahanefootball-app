@@ -17,7 +17,7 @@ GoogleService-Info.plist
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-build/
+mobile/build/
 coverage/
 *.iml
 .idea/
