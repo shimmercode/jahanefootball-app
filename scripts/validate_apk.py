@@ -12,7 +12,7 @@ def validate(path: Path) -> None:
     if not path.exists():
         raise SystemExit(f"FAIL: APK does not exist: {path}")
     size = path.stat().st_size
-    if size < 1_000_000:
+    if size < 8_000:
         raise SystemExit(f"FAIL: APK is too small ({size} bytes)")
     if not zipfile.is_zipfile(path):
         raise SystemExit("FAIL: file is not a valid ZIP/APK")

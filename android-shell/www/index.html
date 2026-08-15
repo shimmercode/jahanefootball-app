@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071912" />
+  <title>جهان فوتبال</title>
+  <style>
+    :root {
+      --bg: #071912;
+      --surface: #0e2a21;
+      --surface2: #14352a;
+      --card: #124033;
+      --gold: #d4af37;
+      --gold2: #f0d78c;
+      --text: #f4f1e8;
+      --muted: #a8b5ae;
+      --live: #ff3b30;
+      --primary: #1f8a70;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Tahoma, "Noto Naskh Arabic", sans-serif; }
+    body { min-height: 100vh; }
+    img { max-width: 100%; display: block; object-fit: cover; }
+    button, input { font-family: inherit; }
+    a { color: inherit; text-decoration: none; }
+    #app { max-width: 720px; margin: 0 auto; min-height: 100vh; padding-bottom: 84px; }
+    .splash {
+      position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(#0b3d2e, #071912); transition: opacity .4s;
+    }
+    .splash.hide { opacity: 0; pointer-events: none; }
+    .logo {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #f0d78c, #d4af37 45%, #0b3d2e);
+      display: grid; place-items: center; font-size: 54px;
+      box-shadow: 0 0 32px rgba(212,175,55,.35);
+    }
+    .splash h1 { color: var(--gold2); margin: 22px 0 6px; }
+    .splash p { color: var(--muted); margin: 0; }
+    header.appbar {
+      position: sticky; top: 0; z-index: 10; background: rgba(7,25,18,.94);
+      backdrop-filter: blur(8px); padding: 14px 16px 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 20px; margin: 0; color: var(--gold2); }
+    .icon-btn { background: var(--surface); border: 0; color: var(--gold); width: 40px; height: 40px; border-radius: 12px; }
+    .pager { display: flex; overflow: auto; gap: 12px; scroll-snap-type: x mandatory; padding: 8px 16px 4px; }
+    .hero {
+      min-width: 86%; scroll-snap-align: start; height: 196px; border-radius: 22px; overflow: hidden;
+      position: relative; background: var(--surface);
+    }
+    .hero img { width: 100%; height: 100%; }
+    .hero .cap {
+      position: absolute; inset: auto 0 0 0; padding: 16px;
+      background: linear-gradient(transparent, #071912ee);
+    }
+    .chip { display: inline-block; background: var(--gold); color: #071912; border-radius: 99px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
+    .section { padding: 8px 16px 0; }
+    .section h2 { font-size: 16px; margin: 12px 0; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; }
+    .hscroll { display: flex; gap: 10px; overflow: auto; padding-bottom: 6px; }
+    .match, .news, .card {
+      background: var(--surface); border: 1px solid #ffffff14; border-radius: 16px;
+    }
+    .match { min-width: 270px; padding: 12px 14px; }
+    .match .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+    .teams { display: grid; grid-template-columns: 1fr 72px 1fr; align-items: center; margin-top: 8px; font-weight: 700; }
+    .score { text-align: center; color: var(--gold2); font-size: 18px; }
+    .live { color: var(--live); font-weight: 800; }
+    .news { display: flex; overflow: hidden; margin-bottom: 10px; }
+    .news img { width: 112px; height: 104px; background: var(--surface2); }
+    .news .body { padding: 10px 12px; }
+    .news .cat { color: var(--gold); font-size: 11px; font-weight: 800; }
+    .news h3 { margin: 6px 0 8px; font-size: 14px; line-height: 1.5; }
+    .news time { color: var(--muted); font-size: 11px; }
+    nav.tabbar {
+      position: fixed; bottom: 0; left: 0; right: 0; max-width: 720px; margin: 0 auto;
+      background: var(--surface); display: grid; grid-template-columns: repeat(5, 1fr);
+      padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #ffffff14;
+    }
+    nav.tabbar button {
+      background: none; border: 0; color: var(--muted); font-size: 11px; padding: 4px 0;
+    }
+    nav.tabbar button.active { color: var(--gold); font-weight: 800; }
+    nav.tabbar span { display: block; font-size: 18px; margin-bottom: 2px; }
+    .searchbox {
+      margin: 8px 16px 12px; display: flex; background: var(--surface); border-radius: 16px; padding: 10px 12px;
+    }
+    .searchbox input {
+      flex: 1; background: none; border: 0; color: var(--text); outline: none; font-size: 15px;
+    }
+    .article img.cover { width: 100%; height: 240px; }
+    .article .pad { padding: 16px 18px 40px; }
+    .article h2 { font-size: 24px; line-height: 1.45; margin: 8px 0 12px; }
+    .article .content { line-height: 1.9; font-size: 16px; }
+    .empty { text-align: center; color: var(--muted); padding: 48px 24px; line-height: 1.8; }
+    .cats { display: flex; gap: 8px; overflow: auto; padding: 0 16px 8px; }
+    .cats button { background: var(--surface2); color: var(--text); border: 0; border-radius: 20px; padding: 8px 14px; }
+    .cats button.on { background: var(--primary); }
+    .info { background: var(--surface); margin: 16px; padding: 16px; border-radius: 16px; color: var(--muted); line-height: 1.7; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="splash" id="splash">
+    <div class="logo">⚽</div>
+    <h1>جهان فوتبال</h1>
+    <p>اخبار، نتایج زنده، مرکز فوتبال</p>
+  </div>
+  <div id="app"></div>
+  <nav class="tabbar" id="tabbar">
+    <button data-route="home" class="active"><span>🏠</span>خانه</button>
+    <button data-route="football"><span>⚽</span>مسابقات</button>
+    <button data-route="search"><span>🔍</span>جستجو</button>
+    <button data-route="news"><span>📰</span>اخبار</button>
+    <button data-route="more"><span>☰</span>بیشتر</button>
+  </nav>
+  <script>
+    const API = "https://raw.githubusercontent.com/shimmercode/jahanefootball-app/arena/01a006c7-jahanefootball-app/backend/public/v1";
+    const LOCAL = {
+      categories: [
+        {id:"all", name:"همه"}, {id:"iran", name:"ایران"}, {id:"world", name:"جهان"},
+        {id:"transfers", name:"نقل‌وانتقالات"}, {id:"ucl", name:"اروپا"}, {id:"national", name:"تیم ملی"}
+      ],
+      news: [
+        {id:"1", title:"دربی تهران؛ نبرد حیثیت در آزادی", excerpt:"پرسپولیس و استقلال برای صدر جدول در آزادی به میدان می‌روند.", content:"هشتاد و چهارمین دربی پایتخت در شرایطی برگزار می‌شود که هر دو تیم برای تثبیت جایگاه‌شان به سه امتیاز نیاز دارند. جهان فوتبال این بازی را لحظه‌به‌لحظه پوشش می‌دهد.", image:"https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80", category:"ایران", category_id:"iran", featured:true},
+        {id:"2", title:"تیم ملی در مسیر آماده‌سازی فصل جدید", excerpt:"کادر فنی فهرست اولیه بازیکنان را اعلام کرد.", content:"فدراسیون فوتبال زمان اردوی بعدی را مشخص کرد. تمرکز روی هماهنگی دفاع و ضربات ایستگاهی است.", image:"https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80", category:"تیم ملی", category_id:"national", featured:true},
+        {id:"3", title:"پنجره‌ی نقل‌وانتقالات؛ مقصد ستاره‌های لیگ برتر", excerpt:"بازار تابستانی با چند پیشنهاد خارجی داغ شده است.", content:"چند مهاجم لیگ برتر پیشنهادهایی از امارات و قطر دریافت کرده‌اند.", image:"https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1400&q=80", category:"نقل‌وانتقالات", category_id:"transfers", featured:true},
+        {id:"4", title:"لیگ قهرمانان اروپا؛ شب‌های بزرگ از راه رسید", excerpt:"مرحله گروهی با تقابل مدعیان آغاز می‌شود.", content:"قرعه‌کشی جدال‌های جذابی میان باشگاه‌های اسپانیا، انگلیس و آلمان رقم زده است.", image:"https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1400&q=80", category:"اروپا", category_id:"ucl"},
+        {id:"5", title:"سپاهان و تراکتور؛ نبرد سخت هفته", excerpt:"هفته چهارم لیگ برتر با دیدار مدعیان اصفهان و تبریز.", content:"سپاهان در خانه به‌دنبال حفظ روند امتیازگیری است و تراکتور برای صدر می‌جنگد.", image:"https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1400&q=80", category:"ایران", category_id:"iran"},
+        {id:"6", title:"آنالیز تاکتیکی: پرس از بالا در لیگ برتر", excerpt:"تیم‌هایی که پرس هماهنگ دارند مالکیت حریف را خفه می‌کنند.", content:"داده‌های هفته‌های اخیر نشان می‌دهد پرس سریع پس از از دست دادن توپ، موقعیت بیشتری می‌سازد.", image:"https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1400&q=80", category:"ایران", category_id:"iran"}
+      ],
+      matches: [
+        {id:"m1", home_team:"پرسپولیس", away_team:"استقلال", league:"لیگ برتر ایران", home_score:1, away_score:1, status:"live", minute:"56", venue:"آزادی"},
+        {id:"m2", home_team:"سپاهان", away_team:"تراکتور", league:"لیگ برتر ایران", status:"scheduled", venue:"نقش جهان"},
+        {id:"m3", home_team:"رئال مادرید", away_team:"بایرن مونیخ", league:"لیگ قهرمانان اروپا", status:"scheduled", venue:"برنابئو"},
+        {id:"m4", home_team:"لیورپول", away_team:"آرسنال", league:"لیگ برتر انگلیس", home_score:2, away_score:1, status:"finished", venue:"آنفیلد"}
+      ]
+    };
+
+    const state = { route: "home", category: "all", query: "", news: LOCAL.news, matches: LOCAL.matches };
+
+    async function boot() {
+      try {
+        const [home, news, matches] = await Promise.all([
+          fetch(API + "/home.json").then(r => r.ok ? r.json() : null),
+          fetch(API + "/news.json").then(r => r.ok ? r.json() : null),
+          fetch(API + "/matches.json").then(r => r.ok ? r.json() : null)
+        ]);
+        if (news && (news.items || news).length) state.news = news.items || news;
+        if (matches && (matches.items || matches).length) state.matches = matches.items || matches;
+        if (home && home.latest && home.latest.length) {
+          state.news = [...home.featured || [], ...home.latest];
+          if (home.matches && home.matches.length) state.matches = home.matches;
+        }
+      } catch (e) { /* offline catalog */ }
+      setTimeout(() => document.getElementById("splash").classList.add("hide"), 1100);
+      render();
+    }
+
+    function score(m) {
+      if (m.home_score == null || m.away_score == null) return "-";
+      return m.home_score + " - " + m.away_score;
+    }
+    function statusLabel(m) {
+      if (m.status === "live") return '<span class="live">زنده ' + (m.minute || "") + "</span>";
+      if (m.status === "finished") return "تمام‌شده";
+      return "برنامه";
+    }
+    function img(src) {
+      return src || "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240"><rect fill="#14352a" width="100%" height="100%"/><text x="50%" y="50%" fill="#d4af37" font-size="42" text-anchor="middle">⚽</text></svg>');
+    }
+    function matchCard(m) {
+      return `<div class="match" onclick="openMatch('${m.id}')">
+        <div class="meta"><span>${m.league || ""}</span>${statusLabel(m)}</div>
+        <div class="teams"><div>${m.home_team}</div><div class="score">${score(m)}</div><div style="text-align:left">${m.away_team}</div></div>
+      </div>`;
+    }
+    function newsCard(n) {
+      return `<article class="news" onclick="openNews('${n.id}')">
+        <img src="${img(n.image || n.image_url)}" alt="" onerror="this.style.opacity=.2" />
+        <div class="body"><div class="cat">${n.category || "اخبار"}</div><h3>${n.title}</h3><time>${n.published_at || "امروز"}</time></div>
+      </article>`;
+    }
+
+    function render() {
+      const app = document.getElementById("app");
+      const news = state.news;
+      const featured = news.filter(n => n.featured).slice(0, 3);
+      const filtered = state.category === "all" ? news : news.filter(n => n.category_id === state.category);
+      const q = state.query.trim();
+      const searched = !q ? news : news.filter(n => (n.title + n.excerpt + (n.category||"")).includes(q));
+      const live = state.matches.filter(m => m.status === "live");
+      const upcoming = state.matches.filter(m => m.status !== "live" && m.status !== "finished");
+      const done = state.matches.filter(m => m.status === "finished");
+
+      if (state.route === "home") {
+        app.innerHTML = `
+          <header class="appbar"><h1>جهان فوتبال</h1><button class="icon-btn" onclick="state.route='notify';render()">🔔</button></header>
+          <div class="pager">${(featured.length?featured:news.slice(0,3)).map(n => `
+            <div class="hero" onclick="openNews('${n.id}')">
+              <img src="${img(n.image || n.image_url)}" onerror="this.style.opacity=.25" />
+              <div class="cap"><span class="chip">${n.category||"اخبار"}</span><h3>${n.title}</h3></div>
+            </div>`).join("")}</div>
+          <div class="section"><h2><i class="dot"></i> نتایج زنده</h2>
+            <div class="hscroll">${state.matches.map(matchCard).join("")}</div></div>
+          <div class="cats">${LOCAL.categories.map(c => `<button onclick="state.category='${c.id}';state.route='news';render()">${c.name}</button>`).join("")}</div>
+          <div class="section"><h2><i class="dot"></i> تازه‌ترین اخبار</h2>${news.map(newsCard).join("")}</div>`;
+      } else if (state.route === "news") {
+        app.innerHTML = `<header class="appbar"><h1>اخبار</h1></header>
+          <div class="cats">${LOCAL.categories.map(c => `<button class="${c.id===state.category?'on':''}" onclick="state.category='${c.id}';render()">${c.name}</button>`).join("")}</div>
+          <div class="section">${filtered.length ? filtered.map(newsCard).join("") : '<div class="empty">خبری در این دسته نیست.</div>'}</div>`;
+      } else if (state.route === "search") {
+        app.innerHTML = `<header class="appbar"><h1>جستجو</h1></header>
+          <div class="searchbox"><input id="q" placeholder="جستجوی خبر، تیم یا لیگ…" value="${state.query}" oninput="state.query=this.value;renderSearch()" /></div>
+          <div class="section" id="results">${searched.map(newsCard).join("")}</div>`;
+      } else if (state.route === "football") {
+        app.innerHTML = `<header class="appbar"><h1>مرکز فوتبال</h1></header>
+          <div class="cats">
+            <button class="on" onclick="showBucket('live')">زنده</button>
+            <button onclick="showBucket('up')">برنامه</button>
+            <button onclick="showBucket('done')">تمام‌شده</button>
+          </div>
+          <div class="section" id="bucket">${(live.length?live:state.matches).map(m=>`<div style="margin-bottom:10px">${matchCard(m)}</div>`).join("")}</div>`;
+        window._buckets = {live, up: upcoming, done};
+      } else if (state.route === "more") {
+        app.innerHTML = `<header class="appbar"><h1>بیشتر</h1></header>
+          <div class="info"><b style="color:var(--gold2)">جهان فوتبال</b><br>رسانه فوتبال ایران و جهان — نسخه ۱.۰.۰<br>بسته: ir.jahanfootball.app<br>حداقل اندروید: ۶.۰</div>
+          <div class="section"><article class="news" onclick="state.route='notify';render()"><div class="body"><div class="cat">تنظیمات</div><h3>اعلان‌ها</h3><time>گل زنده و خبر فوری</time></div></article></div>`;
+      } else if (state.route === "notify") {
+        app.innerHTML = `<header class="appbar"><button class="icon-btn" onclick="state.route='more';render()">➜</button><h1>اعلان‌ها</h1><span></span></header>
+          <div class="info">پوش Firebase در این بیلد بدون کلید FCM فعال نیست. مرکز اعلان داخل برنامه کار می‌کند.</div>
+          <div class="section">
+            ${[["گل پرسپولیس","دقیقه ۵۶ — نتیجه ۱-۱ شد."],["خبر فوری","فهرست اولیه تیم ملی اعلام شد."],["یادآوری بازی","سپاهان و تراکتور امروز"]].map(([t,b])=>`<article class="news"><div class="body"><div class="cat">اعلان</div><h3>${t}</h3><time>${b}</time></div></article>`).join("")}
+          </div>`;
+      } else if (state.route.startsWith("article:")) {
+        const n = news.find(x => x.id === state.route.slice(8)) || news[0];
+        app.innerHTML = `<article class="article">
+          <header class="appbar"><button class="icon-btn" onclick="state.route='news';render()">➜</button><h1>خبر</h1><span></span></header>
+          <img class="cover" src="${img(n.image || n.image_url)}" onerror="this.style.opacity=.25" />
+          <div class="pad"><span class="chip">${n.category||"اخبار"}</span><h2>${n.title}</h2>
+          <p class="content">${n.content || n.excerpt || ""}</p></div></article>`;
+      } else if (state.route.startsWith("match:")) {
+        const m = state.matches.find(x => x.id === state.route.slice(6)) || state.matches[0];
+        app.innerHTML = `<header class="appbar"><button class="icon-btn" onclick="state.route='football';render()">➜</button><h1>جزئیات بازی</h1><span></span></header>
+          <div class="section" style="text-align:center;padding-top:24px">
+            <div style="color:var(--gold)">${m.league}</div>
+            <h2>${m.home_team} ${score(m)} ${m.away_team}</h2>
+            <p>${statusLabel(m)}</p>
+            <div class="info">ورزشگاه: ${m.venue || "نامشخص"}<br>وضعیت: ${m.status}</div>
+          </div>`;
+      }
+      document.querySelectorAll("#tabbar button").forEach(b => {
+        b.classList.toggle("active", ["home","football","search","news","more"].includes(state.route) && b.dataset.route === state.route);
+      });
+    }
+    function renderSearch() {
+      const q = document.getElementById("q").value.trim();
+      state.query = q;
+      const items = !q ? state.news : state.news.filter(n => (n.title + n.excerpt + (n.category||"")).includes(q));
+      document.getElementById("results").innerHTML = items.length ? items.map(newsCard).join("") : '<div class="empty">نتیجه‌ای پیدا نشد.</div>';
+    }
+    function openNews(id) { state.route = "article:" + id; render(); window.scrollTo(0,0); }
+    function openMatch(id) { state.route = "match:" + id; render(); window.scrollTo(0,0); }
+    function showBucket(key) {
+      const items = (window._buckets && window._buckets[key]) || [];
+      document.getElementById("bucket").innerHTML = items.length ? items.map(m=>`<div style="margin-bottom:10px">${matchCard(m)}</div>`).join("") : '<div class="empty">موردی نیست.</div>';
+    }
+    document.getElementById("tabbar").addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      state.route = btn.dataset.route;
+      render();
+      window.scrollTo(0,0);
+    });
+    boot();
+  </script>
+</body>
+</html>
