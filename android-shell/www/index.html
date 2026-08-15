@@ -195,7 +195,8 @@
       categories: [{ id: "all", name: "همه" }],
       loading: true,
       error: "",
-      theme: localStorage.getItem("jf-theme") || "light"
+      theme: localStorage.getItem("jf-theme") || "light",
+      stack: []
     };
 
     function applyTheme() {
@@ -299,7 +300,9 @@
     }
 
     function header(title, extra) {
+      const back = state.route === "home" ? "" : `<button class="ibtn" type="button" data-back="1">${I.back}</button>`;
       return `<header class="bar">
+        ${back}
         <img class="brand" src="${LOGO}" alt="جهان فوتبال" />
         <h1>${title}</h1>
         ${extra || ""}
@@ -385,7 +388,7 @@
         render();
         return;
       }
-      try { history.pushState({ r: state.route }, ""); } catch (e) {}
+      state.stack.push(state.route);
       state.route = route;
       render();
     }
@@ -394,6 +397,22 @@
       if (state.route !== "news" && state.route !== "home") go("news");
       else render();
     }
+    window.jfOnBack = function () {
+      if (state.stack.length) {
+        state.route = state.stack.pop();
+        render();
+        window.scrollTo(0, 0);
+        return "stay";
+      }
+      if (state.route !== "home") {
+        state.route = "home";
+        render();
+        window.scrollTo(0, 0);
+        return "stay";
+      }
+      window.jfAskExit();
+      return "stay";
+    };
     function bindHero() {
       const track = document.getElementById("heroTrack");
       const dots = document.getElementById("dots");
@@ -449,6 +468,10 @@
       window.scrollTo(0, 0);
     });
     document.getElementById("app").addEventListener("click", function (e) {
+      if (e.target.closest("[data-back]")) {
+        window.jfOnBack();
+        return;
+      }
       const news = e.target.closest("[data-open]");
       if (news) { openNews(news.getAttribute("data-open")); return; }
       const cat = e.target.closest("[data-cat]");
