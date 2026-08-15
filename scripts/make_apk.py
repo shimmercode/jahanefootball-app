@@ -308,39 +308,57 @@ def build_resources_arsc() -> bytes:
 
 class DexBuilder:
     def __init__(self) -> None:
+        self.string_set: set[str] = set()
+        self.type_set: set[str] = set()
+        self.proto_set: set[tuple[str, str, tuple[str, ...]]] = set()
+        self.method_set: set[tuple[str, tuple[str, str, tuple[str, ...]], str]] = set()
         self.strings: list[str] = []
-        self.string_index: dict[str, int] = {}
         self.types: list[str] = []
         self.protos: list[tuple[str, str, tuple[str, ...]]] = []
         self.methods: list[tuple[str, tuple[str, str, tuple[str, ...]], str]] = []
 
     def s(self, value: str) -> int:
-        if value not in self.string_index:
-            self.string_index[value] = len(self.strings)
-            self.strings.append(value)
-        return self.string_index[value]
+        self.string_set.add(value)
+        if not self.strings:
+            return -1
+        return self.strings.index(value)
 
     def add_type(self, descriptor: str) -> None:
-        self.s(descriptor)
-        if descriptor not in self.types:
-            self.types.append(descriptor)
+        self.string_set.add(descriptor)
+        self.type_set.add(descriptor)
 
     def add_proto(self, shorty: str, ret: str, params: tuple[str, ...]) -> None:
-        self.s(shorty)
+        self.string_set.add(shorty)
         self.add_type(ret)
-        for p in params:
-            self.add_type(p)
-        item = (shorty, ret, params)
-        if item not in self.protos:
-            self.protos.append(item)
+        for item in params:
+            self.add_type(item)
+        self.proto_set.add((shorty, ret, params))
 
     def add_method(self, owner: str, proto: tuple[str, str, tuple[str, ...]], name: str) -> None:
         self.add_type(owner)
         self.add_proto(*proto)
-        self.s(name)
-        item = (owner, proto, name)
-        if item not in self.methods:
-            self.methods.append(item)
+        self.string_set.add(name)
+        self.method_set.add((owner, proto, name))
+
+    def freeze(self) -> None:
+        # DEX requires lexicographic / id-sorted tables or the verifier rejects the file.
+        self.strings = sorted(self.string_set)
+        self.types = sorted(self.type_set, key=lambda desc: self.strings.index(desc))
+        self.protos = sorted(
+            self.proto_set,
+            key=lambda proto: (
+                self.types.index(proto[1]),
+                [self.types.index(p) for p in proto[2]],
+            ),
+        )
+        self.methods = sorted(
+            self.method_set,
+            key=lambda method: (
+                self.types.index(method[0]),
+                self.strings.index(method[2]),
+                self.protos.index(method[1]),
+            ),
+        )
 
     def type_idx(self, descriptor: str) -> int:
         return self.types.index(descriptor)
@@ -404,6 +422,7 @@ def build_dex() -> bytes:
     d.add_method("Landroid/webkit/WebView;", p_str, "loadUrl")
     d.add_method(cls, p_void, "<init>")
     d.add_method(cls, p_bundle, "onCreate")
+    d.freeze()
 
     # ---- data blobs we can compute after laying out ids ----
     # We assemble in two passes: first emit data with placeholder offsets via a layout buffer.
@@ -512,7 +531,7 @@ def build_dex() -> bytes:
     class_data.extend(uleb128(oncreate_off))
     class_data_off = place(bytes(class_data))
 
-    # map list last
+    # map list last — entries must be ordered by type code
     map_entries = [
         (0x0000, 1, 0),  # header
         (0x0001, string_ids_size, string_ids_off),
@@ -520,44 +539,32 @@ def build_dex() -> bytes:
         (0x0003, proto_ids_size, proto_ids_off),
         (0x0005, method_ids_size, method_ids_off),
         (0x0006, class_defs_size, class_defs_off),
-        (0x2002, string_ids_size, string_data_file_off),
     ]
     if type_lists:
         first_tl = min(type_list_file_off.values())
         map_entries.append((0x1001, len(type_lists), first_tl))
-    map_entries.append((0x2001, 2, init_off))
     map_entries.append((0x2000, 1, class_data_off))
+    map_entries.append((0x2001, 2, init_off))
+    map_entries.append((0x2002, string_ids_size, string_data_file_off))
+    map_entries.sort(key=lambda item: item[0])
     # map_list itself
+    def encode_map(self_off: int) -> bytes:
+        items = list(map_entries) + [(0x1000, 1, self_off)]
+        items.sort(key=lambda item: item[0])
+        blob = bytearray()
+        blob.extend(_u32(len(items)))
+        for typ, size, off in items:
+            blob.extend(_u16(typ))
+            blob.extend(_u16(0))
+            blob.extend(_u32(size))
+            blob.extend(_u32(off))
+        return bytes(blob)
+
     map_off_placeholder = data_off + len(data)
-    map_blob = bytearray()
-    # +1 for the map_list type itself
-    map_blob.extend(_u32(len(map_entries) + 1))
-    for typ, size, off in map_entries:
-        map_blob.extend(_u16(typ))
-        map_blob.extend(_u16(0))
-        map_blob.extend(_u32(size))
-        map_blob.extend(_u32(off))
-    map_blob.extend(_u16(0x1000))
-    map_blob.extend(_u16(0))
-    map_blob.extend(_u32(1))
-    map_blob.extend(_u32(map_off_placeholder))
-    map_off = place(bytes(map_blob))
-    # fix last entry offset if alignment moved it
+    map_off = place(encode_map(map_off_placeholder))
     if map_off != map_off_placeholder:
-        # rewrite map list with corrected self offset
         data[map_off - data_off :] = b""
-        map_blob = bytearray()
-        map_blob.extend(_u32(len(map_entries) + 1))
-        for typ, size, off in map_entries:
-            map_blob.extend(_u16(typ))
-            map_blob.extend(_u16(0))
-            map_blob.extend(_u32(size))
-            map_blob.extend(_u32(off))
-        map_blob.extend(_u16(0x1000))
-        map_blob.extend(_u16(0))
-        map_blob.extend(_u32(1))
-        map_blob.extend(_u32(map_off))
-        map_off = place(bytes(map_blob))
+        map_off = place(encode_map(map_off))
 
     _align4(data)
     data_size = len(data)
