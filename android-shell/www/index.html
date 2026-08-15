@@ -102,6 +102,7 @@
     .sec h2 { font-size: 16px; margin: 12px 0 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .sec h2:before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
 
+    .card, .hero, .cats button, nav.tab button { cursor: pointer; }
     .card {
       display: flex; gap: 0; background: var(--card); border-radius: 18px; overflow: hidden;
       margin-bottom: 12px; box-shadow: var(--shadow);
@@ -255,7 +256,7 @@
 
     function filtered() {
       if (state.category === "all") return state.posts;
-      return state.posts.filter(p => p.category_id === state.category);
+      return state.posts.filter(p => (p.category_ids || [p.category_id]).indexOf(state.category) !== -1);
     }
 
     async function boot() {
@@ -305,7 +306,7 @@
       </header>`;
     }
     function card(n) {
-      return `<article class="card" onclick="openNews('${n.id}')">
+      return `<article class="card" data-open="${n.id}">
         <img src="${n.image || LOGO}" alt="" onerror="this.src='${LOGO}'" />
         <div class="body"><div class="cat">${n.category}</div><h3>${n.title}</h3><time>${faDate(n.date)}</time></div>
       </article>`;
@@ -323,18 +324,18 @@
           ${state.error ? `<div class="status">${state.error}</div>` : ""}
           ${state.loading ? skeletons() : `
           <div class="hero-track" id="heroTrack">
-            ${featured.map(n => `<div class="hero" onclick="openNews('${n.id}')">
+            ${featured.map(n => `<div class="hero" data-open="${n.id}">
               <img src="${n.image || LOGO}" onerror="this.src='${LOGO}'" />
               <div class="cap"><span class="badge">${n.category}</span><h3>${n.title}</h3></div>
             </div>`).join("")}
           </div>
           <div class="dots" id="dots">${featured.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div>
-          <div class="cats">${state.categories.map(c => `<button class="${c.id===state.category?"on":""}" onclick="pickCat('${c.id}')">${c.name}</button>`).join("")}</div>
+          <div class="cats">${state.categories.map(c => `<button class="${c.id===state.category?"on":""}" data-cat="${c.id}">${c.name}</button>`).join("")}</div>
           <div class="sec"><h2>آخرین اخبار</h2>${list.map(card).join("") || '<div class="empty">خبری نیست.</div>'}</div>`}`;
         bindHero();
       } else if (state.route === "news") {
         app.innerHTML = `${header("اخبار")}
-          <div class="cats">${state.categories.map(c => `<button class="${c.id===state.category?"on":""}" onclick="pickCat('${c.id}')">${c.name}</button>`).join("")}</div>
+          <div class="cats">${state.categories.map(c => `<button class="${c.id===state.category?"on":""}" data-cat="${c.id}">${c.name}</button>`).join("")}</div>
           <div class="sec">${list.map(card).join("") || '<div class="empty">خبری در این دسته نیست.</div>'}</div>`;
       } else if (state.route === "search") {
         app.innerHTML = `${header("جستجو")}<div class="searchbox"><input id="q" placeholder="جستجو در اخبار جهان فوتبال…" value="${state.query}" /><span>⌕</span></div>
@@ -360,7 +361,7 @@
         const id = state.route.slice(8);
         const n = state.posts.find(p => p.id === id) || { title: "در حال بارگذاری…", content: "", image: "", category: "", date: "" };
         app.innerHTML = `<article class="article">
-          <header class="bar"><button class="ibtn" onclick="state.route='home';render()">${I.back}</button><h1>خبر</h1></header>
+          <header class="bar"><button class="ibtn" type="button" data-back="1">${I.back}</button><h1>خبر</h1></header>
           <img class="cover" src="${n.image || LOGO}" onerror="this.src='${LOGO}'" />
           <div class="pad"><span class="badge">${n.category || "اخبار"}</span>
             <h2>${n.title || ""}</h2>
@@ -378,22 +379,35 @@
       if (!q) return state.posts;
       return state.posts.filter(p => (p.title + p.excerpt + p.category).indexOf(q) !== -1);
     }
-    function pickCat(id) {
-      state.category = id;
-      if (state.route !== "news" && state.route !== "home") state.route = "news";
+    function go(route) {
+      if (!route) return;
+      if (route === state.route) {
+        render();
+        return;
+      }
+      try { history.pushState({ r: state.route }, ""); } catch (e) {}
+      state.route = route;
       render();
+    }
+    function pickCat(id) {
+      state.category = String(id);
+      if (state.route !== "news" && state.route !== "home") go("news");
+      else render();
     }
     function bindHero() {
       const track = document.getElementById("heroTrack");
       const dots = document.getElementById("dots");
       if (!track || !dots) return;
-      track.addEventListener("scroll", () => {
+      track.onscroll = function () {
         const i = Math.round(track.scrollLeft / Math.max(track.clientWidth * 0.86, 1));
         const n = Math.max(0, Math.min(dots.children.length - 1, i));
-        [...dots.children].forEach((d, idx) => d.classList.toggle("on", idx === n));
-      }, { passive: true });
+        for (var idx = 0; idx < dots.children.length; idx++) {
+          dots.children[idx].classList.toggle("on", idx === n);
+        }
+      };
     }
     async function openNews(id) {
+      id = String(id);
       go("article:" + id);
       window.scrollTo(0, 0);
       const post = await loadFull(id);
@@ -403,15 +417,45 @@
         if (box && post) box.innerHTML = post.content || post.excerpt || "متن این مطلب در دسترس نیست.";
       }
     }
+    window.go = go;
+    window.pickCat = pickCat;
+    window.openNews = openNews;
+    window.addEventListener("popstate", function (e) {
+      state.route = (e.state && e.state.r) ? e.state.r : "home";
+      const m = document.getElementById("exitModal");
+      if (m) m.remove();
+      render();
+    });
+    window.jfAskExit = function () {
+      if (state.route !== "home") {
+        try { history.back(); } catch (e) { state.route = "home"; render(); }
+        return;
+      }
+      if (document.getElementById("exitModal")) return;
+      const wrap = document.createElement("div");
+      wrap.id = "exitModal";
+      wrap.className = "modal";
+      wrap.innerHTML = '<div class="box"><img src="logo.png" alt="" style="width:88px;height:auto;margin:0 auto 12px;border-radius:12px"/><h3>خروج از برنامه</h3><p>مطمئنید می‌خواهید از جهان فوتبال خارج شوید؟</p><div class="actions"><button class="btn-stay" id="stayBtn">ماندن</button><button class="btn-leave" id="leaveBtn">خروج</button></div></div>';
+      document.body.appendChild(wrap);
+      document.getElementById("stayBtn").onclick = function () { wrap.remove(); };
+      document.getElementById("leaveBtn").onclick = function () { location.href = "app://exit"; };
+    };
 
-    document.getElementById("tab").addEventListener("click", e => {
+    document.getElementById("tab").addEventListener("click", function (e) {
       const b = e.target.closest("button");
       if (!b) return;
-      go(b.dataset.route);
+      e.preventDefault();
+      go(b.getAttribute("data-route"));
       window.scrollTo(0, 0);
     });
+    document.getElementById("app").addEventListener("click", function (e) {
+      const news = e.target.closest("[data-open]");
+      if (news) { openNews(news.getAttribute("data-open")); return; }
+      const cat = e.target.closest("[data-cat]");
+      if (cat) { pickCat(cat.getAttribute("data-cat")); }
+    });
 
-    setInterval(() => {
+    setInterval(function () {
       const track = document.getElementById("heroTrack");
       if (!track || state.route !== "home" || !track.children.length) return;
       const w = track.children[0].getBoundingClientRect().width + 12;
@@ -421,11 +465,10 @@
     }, 5500);
 
     boot();
-    setTimeout(() => document.getElementById("splash").classList.add("hide"), 900);
-  </script>
-</body>
-</html>
-"splash").classList.add("hide"), 900);
+    setTimeout(function () {
+      const s = document.getElementById("splash");
+      if (s) { s.classList.add("hide"); s.style.pointerEvents = "none"; }
+    }, 700);
   </script>
 </body>
 </html>
