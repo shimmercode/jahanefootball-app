@@ -1,0 +1,51 @@
+# Secrets — never commit
+*.jks
+*.keystore
+**/key.properties
+google-services.json
+GoogleService-Info.plist
+**/firebase_options.dart
+.env
+.env.*
+!.env.example
+
+# Flutter / Dart
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+*.iml
+.idea/
+*.lock
+
+# Android
+mobile/android/local.properties
+mobile/android/.gradle/
+mobile/android/captures/
+mobile/android/app/debug/
+mobile/android/app/release/
+mobile/android/app/profile/
+mobile/android/key.properties
+
+# Generated
+*.class
+*.pyc
+__pycache__/
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Local toolchains
+/sdk/
+.vscode/
+.cursor/
+
+# Keep release folder but ignore accidental local APKs unless artifacts/
+*.apk
+*.aab
+!artifacts/.gitkeep

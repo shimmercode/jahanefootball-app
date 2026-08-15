@@ -1,0 +1,100 @@
+{
+  "featured": [
+    {
+      "id": "1",
+      "title": "دربی تهران؛ نبرد حیثیت در آزادی",
+      "excerpt": "پرسپولیس و استقلال برای صدر جدول لیگ برتر در ورزشگاه آزادی به میدان می‌روند.",
+      "content": "<p>هشتاد و چهارمین دربی پایتخت.</p>",
+      "image": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
+      "published_at": "2026-08-15T16:00:00Z",
+      "category": "ایران",
+      "category_id": "iran",
+      "featured": true
+    },
+    {
+      "id": "2",
+      "title": "تیم ملی در مسیر آماده‌سازی فصل جدید",
+      "excerpt": "کادر فنی فهرست اولیه بازیکنان را برای اردوی بعدی اعلام کرد.",
+      "content": "<p>اردوی تیم ملی.</p>",
+      "image": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80",
+      "published_at": "2026-08-15T13:00:00Z",
+      "category": "تیم ملی",
+      "category_id": "national",
+      "featured": true
+    },
+    {
+      "id": "3",
+      "title": "پنجره‌ی نقل‌وانتقالات؛ مقصد ستاره‌های لیگ برتر",
+      "excerpt": "بازار تابستانی باشگاه‌های ایرانی با چند پیشنهاد خارجی داغ شده است.",
+      "content": "<p>نقل‌وانتقالات.</p>",
+      "image": "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1400&q=80",
+      "published_at": "2026-08-15T10:00:00Z",
+      "category": "نقل‌وانتقالات",
+      "category_id": "transfers",
+      "featured": true
+    }
+  ],
+  "latest": [
+    {
+      "id": "1",
+      "title": "دربی تهران؛ نبرد حیثیت در آزادی",
+      "excerpt": "پرسپولیس و استقلال برای صدر جدول لیگ برتر در ورزشگاه آزادی به میدان می‌روند.",
+      "content": "<p>هشتاد و چهارمین دربی پایتخت.</p>",
+      "image": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
+      "published_at": "2026-08-15T16:00:00Z",
+      "category": "ایران",
+      "category_id": "iran",
+      "featured": true
+    },
+    {
+      "id": "4",
+      "title": "لیگ قهرمانان اروپا؛ شب‌های بزرگ از راه رسید",
+      "excerpt": "مرحله گروهی با تقابل‌های مدعیان سنتی و تازه‌واردها آغاز می‌شود.",
+      "content": "<p>لیگ قهرمانان.</p>",
+      "image": "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1400&q=80",
+      "published_at": "2026-08-15T06:00:00Z",
+      "category": "اروپا",
+      "category_id": "ucl"
+    },
+    {
+      "id": "5",
+      "title": "سپاهان و تراکتور؛ نبرد سخت هفته",
+      "excerpt": "هفته چهارم لیگ برتر با دیدار مدعیان اصفهان و تبریز پیگیری می‌شود.",
+      "content": "<p>سپاهان و تراکتور.</p>",
+      "image": "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=1400&q=80",
+      "published_at": "2026-08-15T02:00:00Z",
+      "category": "ایران",
+      "category_id": "iran"
+    }
+  ],
+  "matches": [
+    {
+      "id": "m1",
+      "home_team": "پرسپولیس",
+      "away_team": "استقلال",
+      "league": "لیگ برتر ایران",
+      "kickoff": "2026-08-15T16:30:00Z",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "live",
+      "minute": "56",
+      "venue": "ورزشگاه آزادی"
+    },
+    {
+      "id": "m2",
+      "home_team": "سپاهان",
+      "away_team": "تراکتور",
+      "league": "لیگ برتر ایران",
+      "kickoff": "2026-08-15T21:00:00Z",
+      "status": "scheduled",
+      "venue": "نقش جهان"
+    }
+  ],
+  "categories": [
+    { "id": "all", "name": "همه" },
+    { "id": "iran", "name": "ایران" },
+    { "id": "world", "name": "جهان" },
+    { "id": "transfers", "name": "نقل‌وانتقالات" },
+    { "id": "national", "name": "تیم ملی" }
+  ]
+}

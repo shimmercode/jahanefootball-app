@@ -1,0 +1,19 @@
+# This file tracks properties of this Flutter project.
+# Used by Flutter tool to assess capabilities and perform upgrades.
+version:
+  revision: "jahan-football-1.0.0"
+  channel: "stable"
+
+project_type: app
+
+migration:
+  platforms:
+    - platform: root
+      create_revision: jahan-football-1.0.0
+      base_revision: jahan-football-1.0.0
+    - platform: android
+      create_revision: jahan-football-1.0.0
+      base_revision: jahan-football-1.0.0
+  unmanaged_files:
+    - "lib/main.dart"
+    - "ios/Runner.xcodeproj/project.pbxproj"

@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "id": "all", "name": "همه", "slug": "all" },
+    { "id": "iran", "name": "ایران", "slug": "iran" },
+    { "id": "world", "name": "جهان", "slug": "world" },
+    { "id": "transfers", "name": "نقل‌وانتقالات", "slug": "transfers" },
+    { "id": "ucl", "name": "اروپا", "slug": "ucl" },
+    { "id": "national", "name": "تیم ملی", "slug": "national" }
+  ]
+}
